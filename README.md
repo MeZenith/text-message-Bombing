@@ -4,6 +4,9 @@
 
 ![运行中的界面](docs/page-running.png)
 
+> 想丢到服务器上跑？看 [deploy/README-deploy.md](deploy/README-deploy.md)，
+> 里面有一套 systemd + gunicorn + nginx 的部署脚本，一条命令装完。
+
 ## 一、装依赖
 
 ```

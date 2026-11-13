@@ -1,0 +1,7 @@
+# 服务器上额外要装的依赖（本地开发不用装）
+
+# Linux 用 gunicorn：多线程跑 Flask
+gunicorn>=21.2.0
+
+# Windows 用 waitress（gunicorn 不支持 Windows），二选一：
+# waitress>=3.0.0
