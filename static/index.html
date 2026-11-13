@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>text-message-Bombing</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="aurora"></div>
+  <div class="pattern"></div>
+  <div class="grain"></div>
+
+  <header class="top">
+    <div class="brand">
+      <h1>text-message-Bombing</h1>
+      <p>接口库 <b id="endpointTotal">--</b> 条 · 并发发送 · 实时进度</p>
+    </div>
+    <span id="status" class="badge idle">空闲</span>
+  </header>
+
+  <main class="layout">
+    <!-- 左边：参数 -->
+    <section class="card">
+      <h2>发送参数</h2>
+
+      <label class="field">
+        <span>手机号</span>
+        <input id="phone" type="tel" inputmode="numeric" maxlength="11"
+               placeholder="13800000000" autocomplete="off">
+      </label>
+
+      <div class="grid3">
+        <label class="field">
+          <span>轮数</span>
+          <input id="rounds" type="number" min="1" max="50" value="5">
+        </label>
+        <label class="field">
+          <span>并发</span>
+          <input id="workers" type="number" min="1" max="100" value="30">
+        </label>
+        <label class="field">
+          <span>超时（秒）</span>
+          <input id="timeout" type="number" min="1" max="30" value="4">
+        </label>
+      </div>
+
+      <div class="grid2">
+        <label class="field">
+          <span>只发含关键字的接口</span>
+          <input id="filter" type="text" placeholder="比如 aldi，留空=全部" autocomplete="off">
+        </label>
+        <label class="field">
+          <span>最多发几条</span>
+          <input id="limit" type="number" min="0" value="0" placeholder="0 = 全部">
+        </label>
+      </div>
+
+      <label class="check">
+        <input id="voice" type="checkbox" checked>
+        <span>最后加一轮语音呼叫</span>
+      </label>
+
+      <div class="grid2">
+        <label class="field">
+          <span>语音次数</span>
+          <input id="voiceTimes" type="number" min="1" max="50" value="10">
+        </label>
+        <label class="field">
+          <span>语音间隔（秒）</span>
+          <input id="voiceGap" type="number" min="0" max="60" value="5">
+        </label>
+      </div>
+
+      <div class="buttons">
+        <button id="start" class="primary">开始发送</button>
+        <button id="stop" class="ghost" disabled>停止</button>
+      </div>
+
+      <p id="hint" class="hint">填好手机号就能开始，默认 5 轮。</p>
+    </section>
+
+    <!-- 右边：进度 -->
+    <section class="card">
+      <div class="statusline">
+        <h2>运行进度</h2>
+        <div class="meters">
+          <span id="roundInfo">第 0/0 轮</span>
+          <span id="elapsed">0.0s</span>
+        </div>
+      </div>
+
+      <div class="progress">
+        <div id="bar" class="bar"></div>
+      </div>
+
+      <div class="numbers">
+        <div><b id="done">0</b><span>已发</span></div>
+        <div><b id="total">0</b><span>总数</span></div>
+        <div class="ok"><b id="success">0</b><span>成功</span></div>
+        <div class="fail"><b id="failed">0</b><span>失败</span></div>
+      </div>
+
+      <h3>最近结果</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>接口</th><th>状态</th><th>耗时</th></tr>
+          </thead>
+          <tbody id="recent">
+            <tr class="empty"><td colspan="3">还没有开始</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <section class="card">
+    <div class="statusline">
+      <h2>运行日志</h2>
+      <button id="clearLog" class="ghost small">清空</button>
+    </div>
+    <div id="log" class="log">
+      <div class="log-line info">等待开始……</div>
+    </div>
+  </section>
+
+  <section class="card">
+    <details id="listBox">
+      <summary>查看接口清单（<span id="listCount">--</span> 条，只显示名字和网址）</summary>
+      <div id="endpointList" class="endlist">
+        <p class="muted">展开后自动加载……</p>
+      </div>
+    </details>
+  </section>
+
+  <footer class="foot">
+    <span>任务在后台线程里跑，关掉这个页面也不会停</span>
+    <span>终端里按 Ctrl+C 可以停掉服务</span>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,656 @@
+﻿/* text-message-Bombing —— 页面样式
+
+   毛玻璃怎么才看得出来？要三样东西：
+     1. 背景有颜色和纹理（.aurora 光斑 + .pattern 细线圆环），不然玻璃后面是纯黑，
+        糊了也看不出差别；
+     2. 卡片是"半透明 + 背后虚化"（backdrop-filter），不是一块灰色实心板；
+     3. 边缘有一圈高光、下面有投影，玻璃才有厚度感。
+*/
+
+:root {
+  --glass-top: rgba(255, 255, 255, 0.17);
+  --glass-bottom: rgba(255, 255, 255, 0.05);
+  --glass-fill: rgba(9, 14, 22, 0.3);
+  --line: rgba(255, 255, 255, 0.14);
+  --line-soft: rgba(255, 255, 255, 0.07);
+  --text: #eaf1f9;
+  --muted: #9aa9bd;
+  --teal: #2dd4bf;
+  --sky: #38bdf8;
+  --ok: #34d399;
+  --warn: #fbbf24;
+  --fail: #fb7185;
+  --radius: 20px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0 auto;
+  max-width: 1140px;
+  padding: 36px 22px 46px;
+  background: #05080d;
+  color: var(--text);
+  font: 14px/1.65 "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* ---------- 第 1 层：模糊的彩色光斑 ---------- */
+.aurora {
+  position: fixed;
+  inset: -30%;
+  z-index: -3;
+  pointer-events: none;
+  background:
+    radial-gradient(38% 42% at 16% 10%, rgba(45, 212, 191, 0.55), transparent 62%),
+    radial-gradient(36% 40% at 86% 6%, rgba(56, 189, 248, 0.45), transparent 64%),
+    radial-gradient(46% 40% at 46% 24%, rgba(56, 189, 248, 0.28), transparent 70%),
+    radial-gradient(42% 38% at 38% 66%, rgba(45, 212, 191, 0.24), transparent 70%),
+    radial-gradient(44% 42% at 78% 74%, rgba(129, 140, 248, 0.22), transparent 70%),
+    radial-gradient(50% 46% at 22% 96%, rgba(20, 184, 166, 0.28), transparent 68%);
+  filter: blur(56px) saturate(130%);
+}
+
+/* ---------- 第 2 层：清晰的细线圆环 ----------
+   这一层故意不模糊。它透过卡片时会被 backdrop-filter 糊成一片朦胧，
+   和背景上清晰的线条形成对比，"玻璃"就出来了。 */
+.pattern {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background-image:
+    repeating-radial-gradient(
+      circle at 78% 8%,
+      rgba(56, 189, 248, 0.11) 0 1px,
+      transparent 1px 72px
+    ),
+    repeating-radial-gradient(
+      circle at 10% 84%,
+      rgba(45, 212, 191, 0.1) 0 1px,
+      transparent 1px 58px
+    ),
+    repeating-linear-gradient(118deg, rgba(255, 255, 255, 0.035) 0 1px, transparent 1px 150px);
+  mask-image: radial-gradient(120% 110% at 50% 30%, #000 45%, transparent 100%);
+  -webkit-mask-image: radial-gradient(120% 110% at 50% 30%, #000 45%, transparent 100%);
+}
+
+/* ---------- 第 3 层：很细的噪点 ---------- */
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.4;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.06) 0.5px, transparent 0.5px);
+  background-size: 3px 3px;
+}
+
+/* ---------- 顶部 ---------- */
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.brand h1 {
+  margin: 0;
+  font-size: 23px;
+  font-weight: 650;
+  letter-spacing: 0.2px;
+  color: #f6faff;
+  text-shadow: 0 2px 20px rgba(56, 189, 248, 0.25);
+}
+
+.brand p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+.brand b {
+  color: var(--teal);
+  font-weight: 600;
+}
+
+.badge {
+  padding: 7px 16px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  color: #cfdcea;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.04));
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(14px) saturate(180%);
+  -webkit-backdrop-filter: blur(14px) saturate(180%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    0 6px 18px rgba(0, 0, 0, 0.3);
+}
+
+.badge.running {
+  color: #d5fff8;
+  border-color: rgba(45, 212, 191, 0.55);
+  background: linear-gradient(160deg, rgba(45, 212, 191, 0.34), rgba(45, 212, 191, 0.1));
+}
+
+.badge.done {
+  color: #d8fff0;
+  border-color: rgba(52, 211, 153, 0.55);
+  background: linear-gradient(160deg, rgba(52, 211, 153, 0.34), rgba(52, 211, 153, 0.1));
+}
+
+.badge.stopped {
+  color: #fff0cf;
+  border-color: rgba(251, 191, 36, 0.5);
+  background: linear-gradient(160deg, rgba(251, 191, 36, 0.3), rgba(251, 191, 36, 0.08));
+}
+
+.badge.error {
+  color: #ffdbe0;
+  border-color: rgba(251, 113, 133, 0.55);
+  background: linear-gradient(160deg, rgba(251, 113, 133, 0.32), rgba(251, 113, 133, 0.1));
+}
+
+/* ---------- 玻璃卡片 ---------- */
+.layout {
+  display: grid;
+  grid-template-columns: 390px 1fr;
+  gap: 18px;
+  align-items: start;
+}
+
+.card {
+  position: relative;
+  padding: 20px 20px 22px;
+  margin-bottom: 18px;
+  border-radius: var(--radius);
+  /* 上面压一层白色高光渐变，下面垫一点点深色，保证字看得清 */
+  background:
+    linear-gradient(158deg, var(--glass-top), var(--glass-bottom) 46%, rgba(255, 255, 255, 0.09)),
+    var(--glass-fill);
+  border: 1px solid var(--line);
+  backdrop-filter: blur(26px) saturate(180%);
+  -webkit-backdrop-filter: blur(26px) saturate(180%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.06),
+    0 22px 50px -14px rgba(0, 0, 0, 0.62);
+}
+
+/* 左上角那团反光，玻璃的"厚度感"主要靠它 */
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    radial-gradient(60% 44% at 8% -6%, rgba(255, 255, 255, 0.24), transparent 62%),
+    radial-gradient(40% 30% at 100% 0%, rgba(56, 189, 248, 0.14), transparent 60%);
+  mix-blend-mode: screen;
+}
+
+.card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.card h2 {
+  margin: 0 0 16px;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: #eef5fd;
+  letter-spacing: 0.2px;
+}
+
+.card h3 {
+  margin: 20px 0 10px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0.4px;
+}
+
+/* ---------- 表单 ---------- */
+.field {
+  display: block;
+  margin-bottom: 13px;
+}
+
+.field > span {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+input[type="text"],
+input[type="tel"],
+input[type="number"] {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(6, 11, 18, 0.5);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  outline: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
+}
+
+input::placeholder {
+  color: #6b7a8f;
+}
+
+input:hover {
+  border-color: rgba(255, 255, 255, 0.24);
+}
+
+input:focus {
+  border-color: rgba(45, 212, 191, 0.7);
+  background: rgba(6, 11, 18, 0.62);
+  box-shadow:
+    0 0 0 3px rgba(45, 212, 191, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+input.bad {
+  border-color: rgba(251, 113, 133, 0.8);
+  box-shadow: 0 0 0 3px rgba(251, 113, 133, 0.14);
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.grid3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 6px 0 15px;
+  font-size: 13px;
+  color: #d3e0ee;
+  cursor: pointer;
+  user-select: none;
+}
+
+.check input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--teal);
+  cursor: pointer;
+}
+
+/* ---------- 按钮 ---------- */
+.buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 13px;
+  padding: 12px 20px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  transition: transform 0.08s, filter 0.18s, background 0.18s, border-color 0.18s;
+}
+
+button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+button:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+}
+
+button.primary {
+  flex: 1;
+  color: #04231f;
+  background: linear-gradient(135deg, #6ee7d5, #38bdf8);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    0 10px 26px -6px rgba(45, 212, 191, 0.5);
+}
+
+button.primary:hover:not(:disabled) {
+  filter: brightness(1.07);
+}
+
+button.ghost {
+  color: #d3e0ee;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.04));
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+button.ghost:hover:not(:disabled) {
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.07));
+}
+
+button.small {
+  padding: 6px 13px;
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+.hint {
+  margin: 13px 0 0;
+  font-size: 12.5px;
+  color: var(--muted);
+  min-height: 18px;
+}
+
+.hint.err {
+  color: var(--fail);
+}
+
+/* ---------- 进度 ---------- */
+.statusline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.statusline h2 {
+  margin: 0;
+}
+
+.meters {
+  display: flex;
+  gap: 14px;
+  color: #8fa0b6;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.progress {
+  height: 9px;
+  border-radius: 999px;
+  background: rgba(4, 8, 13, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.bar {
+  height: 100%;
+  width: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #2dd4bf, #38bdf8);
+  box-shadow: 0 0 16px rgba(45, 212, 191, 0.6);
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 小数据块：也用玻璃，但薄一点，免得整页都在算模糊 */
+.numbers {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.numbers > div {
+  padding: 12px 14px;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.03));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.numbers b {
+  font-size: 21px;
+  font-weight: 650;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+.numbers span {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.numbers .ok b {
+  color: var(--ok);
+}
+
+.numbers .fail b {
+  color: var(--fail);
+}
+
+/* ---------- 表格 ---------- */
+.table-wrap {
+  max-height: 268px;
+  overflow: auto;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(4, 8, 13, 0.38);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+th,
+td {
+  padding: 8px 12px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  white-space: nowrap;
+}
+
+th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: rgba(10, 16, 24, 0.86);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #a9b8cc;
+  font-weight: 500;
+  font-size: 12.5px;
+}
+
+td:first-child {
+  max-width: 320px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+tr.empty td {
+  color: var(--muted);
+  text-align: center;
+  padding: 22px 0;
+}
+
+td.ok {
+  color: var(--ok);
+}
+
+td.warn {
+  color: var(--warn);
+}
+
+td.bad {
+  color: var(--fail);
+}
+
+/* ---------- 日志 ---------- */
+.log {
+  height: 214px;
+  overflow: auto;
+  padding: 11px 13px;
+  border-radius: 14px;
+  background: rgba(3, 6, 10, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  font-family: "Cascadia Mono", Consolas, "Courier New", monospace;
+  font-size: 12.5px;
+  line-height: 1.8;
+}
+
+.log-line {
+  white-space: pre-wrap;
+  word-break: break-all;
+  color: #a3b5ca;
+}
+
+.log-line.ok {
+  color: #74efc0;
+}
+
+.log-line.warn {
+  color: #fcd34d;
+}
+
+.log-line.fail {
+  color: #fda4af;
+}
+
+/* ---------- 接口清单 ---------- */
+details summary {
+  cursor: pointer;
+  font-size: 13.5px;
+  color: #dbe6f2;
+  list-style: none;
+  user-select: none;
+}
+
+details summary::-webkit-details-marker {
+  display: none;
+}
+
+details summary::before {
+  content: "▸ ";
+  color: var(--teal);
+}
+
+details[open] summary::before {
+  content: "▾ ";
+}
+
+.endlist {
+  margin-top: 14px;
+  max-height: 320px;
+  overflow: auto;
+  padding-right: 6px;
+  font-family: "Cascadia Mono", Consolas, "Courier New", monospace;
+  font-size: 12.5px;
+}
+
+.endline {
+  display: flex;
+  gap: 12px;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: #b3c1d4;
+}
+
+.endline .m {
+  flex: 0 0 42px;
+  color: var(--teal);
+}
+
+.endline .u {
+  color: #9dafc5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------- 页脚 ---------- */
+.foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 26px;
+  color: #7d8ba1;
+  font-size: 12.5px;
+}
+
+/* ---------- 滚动条 ---------- */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.26);
+}
+
+/* ---------- 小屏 ---------- */
+@media (max-width: 900px) {
+  body {
+    padding: 22px 14px 34px;
+  }
+
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .numbers {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .brand h1 {
+    font-size: 20px;
+  }
+
+  .foot {
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+
+/* 不支持 backdrop-filter 的浏览器给个深底，别让字飘在光斑上 */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .card {
+    background: rgba(12, 18, 27, 0.94);
+  }
+}
