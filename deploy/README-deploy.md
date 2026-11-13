@@ -1,4 +1,4 @@
-﻿# 部署到服务器
+# 部署到服务器
 
 两种方式，挑一种。脚本都在 `deploy/` 目录里，是幂等的，重复跑只会更新代码和重启服务。
 
@@ -55,6 +55,49 @@ powershell -ExecutionPolicy Bypass -File deploy\upload.ps1 -Server <IP> -User ro
 ```
 
 它会打包 → `scp` 上传 → SSH 里执行同一套 `deploy.sh`。
+
+## 服务器上装了宝塔面板怎么办
+
+宝塔（BT Panel）自带一套 nginx，跑在 `/www/server/nginx/`，会占住 80 端口，
+这时候 `deploy.sh` 里那段系统 nginx 配置是不起作用的，要手动反代：
+
+1. 找出宝塔的 IP 站点配置文件，通常是
+   `/www/server/panel/vhost/nginx/<你的IP或域名>.conf`
+2. 备份：
+   ```bash
+   cp /www/server/panel/vhost/nginx/1.2.3.4.conf /www/server/panel/vhost/nginx/1.2.3.4.conf.bak
+   ```
+3. 在文件里 `root ...;` 那行后面加一段（IP 站点已经 `server_name 1.2.3.4`，不用新建 server 块）：
+   ```nginx
+   location ^~ /static/ {
+       alias /opt/text-message-Bombing/static/;
+       expires 7d;
+       access_log off;
+   }
+
+   location / {
+       proxy_pass http://127.0.0.1:5000;
+       proxy_http_version 1.1;
+       proxy_set_header Host $host;
+       proxy_set_header X-Real-IP $remote_addr;
+       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+       proxy_set_header X-Forwarded-Proto $scheme;
+       proxy_read_timeout 60s;
+       proxy_buffering off;
+   }
+   ```
+4. 用**宝塔的** nginx 校验并生效（不是 `systemctl reload nginx`）：
+   ```bash
+   /www/server/nginx/sbin/nginx -t -c /www/server/nginx/conf/nginx.conf
+   /www/server/nginx/sbin/nginx -s reload
+   ```
+5. 顺手把系统 nginx 的开机启动关掉，免得重启后两个 nginx 抢 80：
+   ```bash
+   systemctl disable nginx
+   ```
+
+注意：以后在宝塔面板里点"保存"网站配置，可能会覆盖掉这段 location，
+覆盖了就照上面第 3 步再加一次。
 
 ## 部署后的样子
 
